@@ -1,5 +1,7 @@
 # fp-utils
 
+[![Build Status](https://travis-ci.org/Khan/fp-utils.svg?branch=master)](https://travis-ci.org/Khan/fp-utils)
+
 A small library of functional programming utilities.
 
 ## function list
