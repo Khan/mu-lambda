@@ -1,6 +1,6 @@
 {
-  "name": "fp-utils",
-  "version": "0.0.1",
+  "name": "mu-lambda",
+  "version": "0.0.2",
   "description": "",
   "main": "index.js",
   "directories": {
@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "mocha --compilers js:babel-register",
-    "build": "browserify -e src/index.js -o dist/fp-utils.js -s FP -t babelify"
+    "build": "browserify -e src/index.js -o dist/index.js -s mu -t babelify"
   },
   "author": "Kevin Barabash <kevinb@khanacademy.org>",
   "license": "MIT",
