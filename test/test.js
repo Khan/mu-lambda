@@ -283,4 +283,11 @@ describe('fp-utils', () => {
             assert.deepEqual(actual, [1, 2]);
         });
     });
+
+    describe('tap', () => {
+        it('should return the second param unaltered', () => {
+            const actual = fp.tap(fp.log, 'hello, world');
+            assert.equal(actual, 'hello, world');
+        });
+    });
 });

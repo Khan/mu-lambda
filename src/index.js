@@ -91,6 +91,12 @@ const fromEntries =
 // sum :: [Number] -> Number
 const sum = (arr) => reduce((res, v) => res + v, 0, arr);
 
+// tap :: fn -> a -> a
+const tap = curry((fn, a) => (fn(a), a));
+
+// log :: a -> void
+const log = (a) => console.log(a);
+
 // join :: String -> [a] -> String
 const join = curry((s, arr) => arr.join(s));
 
@@ -118,6 +124,7 @@ module.exports = {
     join,
     last,
     length,
+    log,
     map,
     neq,
     none,
@@ -129,6 +136,7 @@ module.exports = {
     remove,
     replace,
     split,
+    tap,
     sum,
     uniq,
 };
