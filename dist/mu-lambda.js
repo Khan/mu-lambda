@@ -54,7 +54,7 @@ module.exports =
 
 	'use strict';
 
-	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 	/**
 	 * A very small library of helpful functional programming methods.
@@ -62,17 +62,64 @@ module.exports =
 	 * Temporary docs: http://ramdajs.com/docs/.
 	 */
 
-	// curry :: (* -> a) -> (* -> a)
-	var curry = function curry(f) {
+	var arity = function arity(n, fn) {
+	    switch (n) {
+	        case 0:
+	            return function () {
+	                return fn.apply(null, arguments);
+	            };
+	        case 1:
+	            return function (a) {
+	                return fn.apply(null, arguments);
+	            };
+	        case 2:
+	            return function (a, b) {
+	                return fn.apply(null, arguments);
+	            };
+	        case 3:
+	            return function (a, b, c) {
+	                return fn.apply(null, arguments);
+	            };
+	        case 4:
+	            return function (a, b, c, d) {
+	                return fn.apply(null, arguments);
+	            };
+	        case 5:
+	            return function (a, b, c, d, e) {
+	                return fn.apply(null, arguments);
+	            };
+	        default:
+	            {
+	                var args = [];
+	                for (var i = 0; i < n; i++) {
+	                    args.push('arg' + i);
+	                }
+	                args.push('return fn.apply(null, arguments)');
+	                return new (Function.prototype.bind.apply(Function, [null].concat(args)))();
+	            }
+	    }
+	};
+
+	var _curryN = function _curryN(n, received, fn) {
 	    return function () {
 	        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
 	            args[_key] = arguments[_key];
 	        }
 
-	        return f.length > args.length
-	        // bind returns a function with the correct number of parameters
-	        ? curry(f.bind.apply(f, [null].concat(args))) : f.apply(undefined, args);
+	        var combined = received.concat(args);
+	        var left = n - combined.length;
+	        return left <= 0 ? fn.apply(undefined, _toConsumableArray(combined)) : arity(left, _curryN(n, combined, fn));
 	    };
+	};
+
+	// curryN :: Number -> (* -> a) -> (* -> a)
+	var curryN = function curryN(n, fn) {
+	    return arity(n, _curryN(n, [], fn));
+	};
+
+	// curry :: (* -> a) -> (* -> a)
+	var curry = function curry(fn) {
+	    return curryN(fn.length, fn);
 	};
 
 	// reduce :: ((a, b) -> a) -> a -> [b] -> a
@@ -221,12 +268,8 @@ module.exports =
 
 	// fromEntries :: [[k,v]] → {k: v}
 	var fromEntries = function fromEntries(entries) {
-	    return reduce(function (obj, _ref) {
-	        var _ref2 = _slicedToArray(_ref, 2),
-	            k = _ref2[0],
-	            v = _ref2[1];
-
-	        return obj[k] = v, obj;
+	    return reduce(function (obj, entry) {
+	        return obj[entry[0]] = entry[1], obj;
 	    }, {}, entries);
 	};
 
@@ -235,6 +278,16 @@ module.exports =
 	    return reduce(function (res, v) {
 	        return res + v;
 	    }, 0, arr);
+	};
+
+	// tap :: fn -> a -> a
+	var tap = curry(function (fn, a) {
+	    return fn(a), a;
+	});
+
+	// log :: a -> void
+	var log = function log(a) {
+	    return console.log(a);
 	};
 
 	// join :: String -> [a] -> String
@@ -255,6 +308,7 @@ module.exports =
 	    any: any,
 	    compose: compose,
 	    curry: curry,
+	    curryN: curryN,
 	    eq: eq,
 	    filter: filter,
 	    find: find,
@@ -269,6 +323,7 @@ module.exports =
 	    join: join,
 	    last: last,
 	    length: length,
+	    log: log,
 	    map: map,
 	    neq: neq,
 	    none: none,
@@ -280,6 +335,7 @@ module.exports =
 	    remove: remove,
 	    replace: replace,
 	    split: split,
+	    tap: tap,
 	    sum: sum,
 	    uniq: uniq
 	};

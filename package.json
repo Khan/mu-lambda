@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test": "mocha",
-    "build": "webpack --output-library-target commonjs2 --output-filename mu-lambda.js"
+    "build": "webpack --output-library-target commonjs2 --output-filename mu-lambda.js",
+    "build-min": "webpack --optimize-minimize --output-library-target commonjs2 --output-filename mu-lambda.min.js"
   },
   "author": "Kevin Barabash <kevinb@khanacademy.org>",
   "license": "MIT",

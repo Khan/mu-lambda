@@ -25,7 +25,7 @@ const arity = (n, fn) => {
 
 const _curryN = (n, received, fn) =>
     (...args) => {
-        const combined = [...received, ...args];
+        const combined = received.concat(args);
         const left = n - combined.length;
         return left <= 0
             ? fn(...combined)
@@ -115,7 +115,7 @@ const length = (arr) => arr.length;
 
 // fromEntries :: [[k,v]] → {k: v}
 const fromEntries =
-    (entries) => reduce((obj, [k, v]) => (obj[k] = v, obj), {}, entries);
+    (entries) => reduce((obj, entry) => (obj[entry[0]] = entry[1], obj), {}, entries);
 
 // sum :: [Number] -> Number
 const sum = (arr) => reduce((res, v) => res + v, 0, arr);
