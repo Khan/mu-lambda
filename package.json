@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "mocha --compilers js:babel-register",
+    "test": "mocha",
     "build": "webpack --output-library-target commonjs2 --output-filename mu-lambda.js"
   },
   "author": "Kevin Barabash <kevinb@khanacademy.org>",

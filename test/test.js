@@ -15,6 +15,21 @@ describe('fp-utils', () => {
             assert.equal(add(1, 2)(3), 6);
             assert.equal(add(1)(2)(3), 6);
         });
+
+        it('should maintain the function length', () => {
+            const add = fp.curry((a, b, c) => a + b + c);
+
+            assert.equal(add.length, 3);
+        });
+    });
+
+    describe('curryN', () => {
+        it('should return a function with the specified length', () => {
+            const max3 = fp.curryN(3, (...args) => Math.max(...args));
+
+            assert.equal(max3.length, 3);
+            assert.equal(max3(3, 7, 5), 7);
+        });
     });
 
     describe('reduce', () => {

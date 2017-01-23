@@ -4,10 +4,39 @@
  * Temporary docs: http://ramdajs.com/docs/.
  */
 
+const arity = (n, fn) => {
+    switch (n) {
+        case 0: return function() { return fn.apply(null, arguments) };
+        case 1: return function(a) { return fn.apply(null, arguments) };
+        case 2: return function(a, b) { return fn.apply(null, arguments) };
+        case 3: return function(a, b, c) { return fn.apply(null, arguments) };
+        case 4: return function(a, b, c, d) { return fn.apply(null, arguments) };
+        case 5: return function(a, b, c, d, e) { return fn.apply(null, arguments) };
+        default: {
+            const args = [];
+            for (let i = 0; i < n; i++) {
+                args.push(`arg${i}`);
+            }
+            args.push('return fn.apply(null, arguments)');
+            return new Function(...args);
+        }
+    }
+}
+
+const _curryN = (n, received, fn) =>
+    (...args) => {
+        const combined = [...received, ...args];
+        const left = n - combined.length;
+        return left <= 0
+            ? fn(...combined)
+            : arity(left, _curryN(n, combined, fn));
+    };
+
+// curryN :: Number -> (* -> a) -> (* -> a)
+const curryN = (n, fn) => arity(n, _curryN(n, [], fn));
+
 // curry :: (* -> a) -> (* -> a)
-const curry = f => (...args) => f.length > args.length
-    // bind returns a function with the correct number of parameters
-    ? curry(f.bind(null, ...args)) : f(...args);
+const curry = (fn) => curryN(fn.length, fn);
 
 // reduce :: ((a, b) -> a) -> a -> [b] -> a
 const reduce = curry((f, init, arr) => arr.reduce(f, init));
@@ -110,6 +139,7 @@ module.exports = {
     any,
     compose,
     curry,
+    curryN,
     eq,
     filter,
     find,
