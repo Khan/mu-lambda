@@ -2,7 +2,7 @@
   "name": "mu-lambda",
   "version": "0.0.2",
   "description": "",
-  "main": "index.js",
+  "main": "dist/mu-lambda.js",
   "directories": {
     "test": "test"
   },
