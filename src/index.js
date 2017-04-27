@@ -75,8 +75,8 @@ const all = curry((f, arr) => reduce((res, v) => res && f(v), true, arr));
 // none :: (a -> Boolean) -> [a] -> Boolean
 const none = curry((f, arr) => !reduce((res, v) => res || f(v), false, arr));
 
-// any :: (a -> Boolean) -> [a] -> Boolean
-const any = curry((f, arr) => reduce((res, v) => res || f(v), false, arr));
+// some :: (a -> Boolean) -> [a] -> Boolean
+const some = curry((f, arr) => reduce((res, v) => res || f(v), false, arr));
 
 // split :: (String | RegExp) -> String -> [String]
 const split = curry((splitOn, str) => str.split(splitOn));
@@ -136,7 +136,7 @@ const uniq = (arr) => reduce(
 
 module.exports = {
     all,
-    any,
+    some,
     compose,
     curry,
     curryN,

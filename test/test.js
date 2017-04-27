@@ -181,15 +181,15 @@ describe('fp-utils', () => {
         });
     });
 
-    describe('any', () => {
-        it('should return true if any item satisfies the predicate', () => {
-            const anyEven = fp.any((v) => v % 2 === 0);
-            assert(anyEven([1, 2, 3]));
+    describe('some', () => {
+        it('should return true if some item satisfies the predicate', () => {
+            const someEven = fp.some((v) => v % 2 === 0);
+            assert(someEven([1, 2, 3]));
         });
 
         it('should return false if no item satisfies the predicate', () => {
-            const anyEven = fp.any((v) => v % 2 === 0);
-            assert.equal(anyEven([1, 3, 5]), false);
+            const someEven = fp.some((v) => v % 2 === 0);
+            assert.equal(someEven([1, 3, 5]), false);
         });
     });
 
