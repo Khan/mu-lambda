@@ -1,344 +1,172 @@
-module.exports =
-/******/ (function(modules) { // webpackBootstrap
-/******/ 	// The module cache
-/******/ 	var installedModules = {};
+'use strict';
 
-/******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
+Object.defineProperty(exports, '__esModule', { value: true });
 
-/******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId])
-/******/ 			return installedModules[moduleId].exports;
+/**
+ * A very small library of helpful functional programming methods.
+ *
+ * Temporary docs: http://ramdajs.com/docs/.
+ */
 
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = installedModules[moduleId] = {
-/******/ 			exports: {},
-/******/ 			id: moduleId,
-/******/ 			loaded: false
-/******/ 		};
+const arity = (n, fn) => {
+    switch (n) {
+        case 0: return function() { return fn.apply(null, arguments) };
+        case 1: return function(a) { return fn.apply(null, arguments) };
+        case 2: return function(a, b) { return fn.apply(null, arguments) };
+        case 3: return function(a, b, c) { return fn.apply(null, arguments) };
+        case 4: return function(a, b, c, d) { return fn.apply(null, arguments) };
+        case 5: return function(a, b, c, d, e) { return fn.apply(null, arguments) };
+        default: {
+            const args = [];
+            for (let i = 0; i < n; i++) {
+                args.push(`arg${i}`);
+            }
+            args.push('return fn.apply(null, arguments)');
+            return new Function(...args);
+        }
+    }
+};
 
-/******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+const _curryN = (n, received, fn) =>
+    (...args) => {
+        const combined = received.concat(args);
+        const left = n - combined.length;
+        return left <= 0
+            ? fn(...combined)
+            : arity(left, _curryN(n, combined, fn));
+    };
 
-/******/ 		// Flag the module as loaded
-/******/ 		module.loaded = true;
+// curryN :: Number -> (* -> a) -> (* -> a)
+const curryN = (n, fn) => arity(n, _curryN(n, [], fn));
 
-/******/ 		// Return the exports of the module
-/******/ 		return module.exports;
-/******/ 	}
+// curry :: (* -> a) -> (* -> a)
+const curry = (fn) => curryN(fn.length, fn);
 
+// reduce :: ((a, b) -> a) -> a -> [b] -> a
+const reduce = curry((f, init, arr) => arr.reduce(f, init));
 
-/******/ 	// expose the modules object (__webpack_modules__)
-/******/ 	__webpack_require__.m = modules;
+// reduceRight :: ((a, b) -> a) -> a -> [b] -> a
+const reduceRight = curry((f, init, arr) => arr.reduceRight(f, init));
 
-/******/ 	// expose the module cache
-/******/ 	__webpack_require__.c = installedModules;
+// compose :: Function f => [f] -> (a -> b)
+const compose = (...farr) => x => farr.reduceRight((v, f) => f(v), x);
 
-/******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "";
+// pipe :: Function f => [f] -> (a -> b)
+const pipe = (...farr) => x => farr.reduce((v, f) => f(v), x);
 
-/******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(0);
-/******/ })
-/************************************************************************/
-/******/ ([
-/* 0 */
-/***/ function(module, exports, __webpack_require__) {
+// map :: (a -> b) -> [a] -> [b]
+const map = curry((f, arr) => arr.map(f));
 
-	module.exports = __webpack_require__(1);
+// filter :: (a -> Boolean) -> [a] -> [a]
+const filter = curry((f, arr) => arr.filter(f));
 
+// find :: (a -> Boolean) -> [a] -> a
+const find = curry((f, arr) => arr.find(f));
 
-/***/ },
-/* 1 */
-/***/ function(module, exports) {
+// findIndex :: (a -> Boolean) -> [a] -> Number
+const findIndex = curry((f, arr) => arr.findIndex(f));
 
-	'use strict';
+// flatten :: [a] -> [b]
+const flatten = reduce(
+    (res, v) => res.concat(Array.isArray(v) ? flatten(v) : [v]), []);
 
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+// flatMap :: (a -> [b]) -> [a] -> [b]
+const flatMap = curry((f, arr) => compose(flatten, map(f))(arr));
 
-	/**
-	 * A very small library of helpful functional programming methods.
-	 *
-	 * Temporary docs: http://ramdajs.com/docs/.
-	 */
+// all :: (a -> Boolean) -> [a] -> Boolean
+const all = curry((f, arr) => reduce((res, v) => res && f(v), true, arr));
 
-	var arity = function arity(n, fn) {
-	    switch (n) {
-	        case 0:
-	            return function () {
-	                return fn.apply(null, arguments);
-	            };
-	        case 1:
-	            return function (a) {
-	                return fn.apply(null, arguments);
-	            };
-	        case 2:
-	            return function (a, b) {
-	                return fn.apply(null, arguments);
-	            };
-	        case 3:
-	            return function (a, b, c) {
-	                return fn.apply(null, arguments);
-	            };
-	        case 4:
-	            return function (a, b, c, d) {
-	                return fn.apply(null, arguments);
-	            };
-	        case 5:
-	            return function (a, b, c, d, e) {
-	                return fn.apply(null, arguments);
-	            };
-	        default:
-	            {
-	                var args = [];
-	                for (var i = 0; i < n; i++) {
-	                    args.push('arg' + i);
-	                }
-	                args.push('return fn.apply(null, arguments)');
-	                return new (Function.prototype.bind.apply(Function, [null].concat(args)))();
-	            }
-	    }
-	};
+// none :: (a -> Boolean) -> [a] -> Boolean
+const none = curry((f, arr) => !reduce((res, v) => res || f(v), false, arr));
 
-	var _curryN = function _curryN(n, received, fn) {
-	    return function () {
-	        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-	            args[_key] = arguments[_key];
-	        }
+// some :: (a -> Boolean) -> [a] -> Boolean
+const some = curry((f, arr) => reduce((res, v) => res || f(v), false, arr));
 
-	        var combined = received.concat(args);
-	        var left = n - combined.length;
-	        return left <= 0 ? fn.apply(undefined, _toConsumableArray(combined)) : arity(left, _curryN(n, combined, fn));
-	    };
-	};
+// split :: (String | RegExp) -> String -> [String]
+const split = curry((splitOn, str) => str.split(splitOn));
 
-	// curryN :: Number -> (* -> a) -> (* -> a)
-	var curryN = function curryN(n, fn) {
-	    return arity(n, _curryN(n, [], fn));
-	};
+// replace :: (String | RegExp) -> String -> String
+const replace = curry((s, r, str) => str.replace(s, r));
 
-	// curry :: (* -> a) -> (* -> a)
-	var curry = function curry(fn) {
-	    return curryN(fn.length, fn);
-	};
+// remove :: String a => a -> a -> a
+const remove = curry((s, str) => replace(s, '')(str));
 
-	// reduce :: ((a, b) -> a) -> a -> [b] -> a
-	var reduce = curry(function (f, init, arr) {
-	    return arr.reduce(f, init);
-	});
+// eq :: a -> b -> Boolean
+// NOTE: shallow equals
+const eq = curry((a, b) => a === b);
 
-	// reduceRight :: ((a, b) -> a) -> a -> [b] -> a
-	var reduceRight = curry(function (f, init, arr) {
-	    return arr.reduceRight(f, init);
-	});
+// neq :: a -> b -> Boolean
+// NOTE: shallow not equals
+const neq = curry((a, b) => a !== b);
 
-	// compose :: Function f => [f] -> (a -> b)
-	var compose = function compose() {
-	    for (var _len2 = arguments.length, farr = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-	        farr[_key2] = arguments[_key2];
-	    }
+// prop :: s -> {s: a} -> a | Undefined
+const prop = curry((k, obj) => obj[k]);
 
-	    return function (x) {
-	        return farr.reduceRight(function (v, f) {
-	            return f(v);
-	        }, x);
-	    };
-	};
+// propEq :: String -> a -> Object -> Boolean
+const propEq = curry((k, v, obj) => compose(eq(v), prop(k))(obj));
 
-	// pipe :: Function f => [f] -> (a -> b)
-	var pipe = function pipe() {
-	    for (var _len3 = arguments.length, farr = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-	        farr[_key3] = arguments[_key3];
-	    }
+// last :: [a] -> a
+const last = (arr) => arr[arr.length - 1];
 
-	    return function (x) {
-	        return farr.reduce(function (v, f) {
-	            return f(v);
-	        }, x);
-	    };
-	};
+// first :: [a] -> a
+const first = (arr) => arr[0];
 
-	// map :: (a -> b) -> [a] -> [b]
-	var map = curry(function (f, arr) {
-	    return arr.map(f);
-	});
+// id :: a -> a
+const id = (a) => a;
 
-	// filter :: (a -> Boolean) -> [a] -> [a]
-	var filter = curry(function (f, arr) {
-	    return arr.filter(f);
-	});
+// length :: [a] -> Number
+const length = (arr) => arr.length;
 
-	// find :: (a -> Boolean) -> [a] -> a
-	var find = curry(function (f, arr) {
-	    return arr.find(f);
-	});
+// fromEntries :: [[k,v]] → {k: v}
+const fromEntries =
+    (entries) => reduce((obj, entry) => (obj[entry[0]] = entry[1], obj), {}, entries);
 
-	// findIndex :: (a -> Boolean) -> [a] -> Number
-	var findIndex = curry(function (f, arr) {
-	    return arr.findIndex(f);
-	});
+// sum :: [Number] -> Number
+const sum = (arr) => reduce((res, v) => res + v, 0, arr);
 
-	// flatten :: [a] -> [b]
-	var flatten = reduce(function (res, v) {
-	    return res.concat(Array.isArray(v) ? flatten(v) : [v]);
-	}, []);
+// tap :: fn -> a -> a
+const tap = curry((fn, a) => (fn(a), a));
 
-	// flatMap :: (a -> [b]) -> [a] -> [b]
-	var flatMap = curry(function (f, arr) {
-	    return compose(flatten, map(f))(arr);
-	});
+// log :: a -> void
+const log = (a) => console.log(a);
 
-	// all :: (a -> Boolean) -> [a] -> Boolean
-	var all = curry(function (f, arr) {
-	    return reduce(function (res, v) {
-	        return res && f(v);
-	    }, true, arr);
-	});
+// join :: String -> [a] -> String
+const join = curry((s, arr) => arr.join(s));
 
-	// none :: (a -> Boolean) -> [a] -> Boolean
-	var none = curry(function (f, arr) {
-	    return !reduce(function (res, v) {
-	        return res || f(v);
-	    }, false, arr);
-	});
+// uniq :: [a] -> [a]
+// NOTE: doesn't handle structures
+const uniq = (arr) => reduce(
+    (res, v) => res.indexOf(v) !== -1 ? res : (res.push(v), res), [], arr);
 
-	// some :: (a -> Boolean) -> [a] -> Boolean
-	var some = curry(function (f, arr) {
-	    return reduce(function (res, v) {
-	        return res || f(v);
-	    }, false, arr);
-	});
-
-	// split :: (String | RegExp) -> String -> [String]
-	var split = curry(function (splitOn, str) {
-	    return str.split(splitOn);
-	});
-
-	// replace :: (String | RegExp) -> String -> String
-	var replace = curry(function (s, r, str) {
-	    return str.replace(s, r);
-	});
-
-	// remove :: String a => a -> a -> a
-	var remove = curry(function (s, str) {
-	    return replace(s, '')(str);
-	});
-
-	// eq :: a -> b -> Boolean
-	// NOTE: shallow equals
-	var eq = curry(function (a, b) {
-	    return a === b;
-	});
-
-	// neq :: a -> b -> Boolean
-	// NOTE: shallow not equals
-	var neq = curry(function (a, b) {
-	    return a !== b;
-	});
-
-	// prop :: s -> {s: a} -> a | Undefined
-	var prop = curry(function (k, obj) {
-	    return obj[k];
-	});
-
-	// propEq :: String -> a -> Object -> Boolean
-	var propEq = curry(function (k, v, obj) {
-	    return compose(eq(v), prop(k))(obj);
-	});
-
-	// last :: [a] -> a
-	var last = function last(arr) {
-	    return arr[arr.length - 1];
-	};
-
-	// first :: [a] -> a
-	var first = function first(arr) {
-	    return arr[0];
-	};
-
-	// id :: a -> a
-	var id = function id(a) {
-	    return a;
-	};
-
-	// length :: [a] -> Number
-	var length = function length(arr) {
-	    return arr.length;
-	};
-
-	// fromEntries :: [[k,v]] → {k: v}
-	var fromEntries = function fromEntries(entries) {
-	    return reduce(function (obj, entry) {
-	        return obj[entry[0]] = entry[1], obj;
-	    }, {}, entries);
-	};
-
-	// sum :: [Number] -> Number
-	var sum = function sum(arr) {
-	    return reduce(function (res, v) {
-	        return res + v;
-	    }, 0, arr);
-	};
-
-	// tap :: fn -> a -> a
-	var tap = curry(function (fn, a) {
-	    return fn(a), a;
-	});
-
-	// log :: a -> void
-	var log = function log(a) {
-	    return console.log(a);
-	};
-
-	// join :: String -> [a] -> String
-	var join = curry(function (s, arr) {
-	    return arr.join(s);
-	});
-
-	// uniq :: [a] -> [a]
-	// NOTE: doesn't handle structures
-	var uniq = function uniq(arr) {
-	    return reduce(function (res, v) {
-	        return res.indexOf(v) !== -1 ? res : (res.push(v), res);
-	    }, [], arr);
-	};
-
-	module.exports = {
-	    all: all,
-	    some: some,
-	    compose: compose,
-	    curry: curry,
-	    curryN: curryN,
-	    eq: eq,
-	    filter: filter,
-	    find: find,
-	    findIndex: findIndex,
-	    first: first,
-	    flatMap: flatMap,
-	    flatten: flatten,
-	    fromEntries: fromEntries,
-	    fromPairs: fromEntries,
-	    id: id,
-	    identity: id,
-	    join: join,
-	    last: last,
-	    length: length,
-	    log: log,
-	    map: map,
-	    neq: neq,
-	    none: none,
-	    pipe: pipe,
-	    prop: prop,
-	    propEq: propEq,
-	    reduce: reduce,
-	    reduceRight: reduceRight,
-	    remove: remove,
-	    replace: replace,
-	    split: split,
-	    tap: tap,
-	    sum: sum,
-	    uniq: uniq
-	};
-
-/***/ }
-/******/ ]);
+exports.curryN = curryN;
+exports.curry = curry;
+exports.reduce = reduce;
+exports.reduceRight = reduceRight;
+exports.compose = compose;
+exports.pipe = pipe;
+exports.map = map;
+exports.filter = filter;
+exports.find = find;
+exports.findIndex = findIndex;
+exports.flatten = flatten;
+exports.flatMap = flatMap;
+exports.all = all;
+exports.none = none;
+exports.some = some;
+exports.split = split;
+exports.replace = replace;
+exports.remove = remove;
+exports.eq = eq;
+exports.neq = neq;
+exports.prop = prop;
+exports.propEq = propEq;
+exports.last = last;
+exports.first = first;
+exports.id = id;
+exports.length = length;
+exports.fromEntries = fromEntries;
+exports.sum = sum;
+exports.tap = tap;
+exports.log = log;
+exports.join = join;
+exports.uniq = uniq;
