@@ -202,8 +202,8 @@ module.exports =
 	    }, false, arr);
 	});
 
-	// any :: (a -> Boolean) -> [a] -> Boolean
-	var any = curry(function (f, arr) {
+	// some :: (a -> Boolean) -> [a] -> Boolean
+	var some = curry(function (f, arr) {
 	    return reduce(function (res, v) {
 	        return res || f(v);
 	    }, false, arr);
@@ -305,7 +305,7 @@ module.exports =
 
 	module.exports = {
 	    all: all,
-	    any: any,
+	    some: some,
 	    compose: compose,
 	    curry: curry,
 	    curryN: curryN,

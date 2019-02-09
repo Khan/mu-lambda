@@ -9,7 +9,7 @@ A small library of functional programming utilities.
 All functions are curried.
 
 - all
-- any
+- some
 - compose
 - curry
 - eq
